@@ -1,0 +1,7 @@
+{
+  "target": "series.authorityId",
+  "description": "Authority ID that controlling the series",
+  "subfield": [
+    "9"
+  ]
+}

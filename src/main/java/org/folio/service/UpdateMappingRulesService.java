@@ -8,10 +8,7 @@ import org.folio.model.Configuration;
 import org.folio.util.FileWorker;
 import org.folio.util.HttpWorker;
 import org.folio.util.MappingRulesUtil;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 import static org.folio.FolioMappingRulesUpdateOrchidApp.exitWithMessage;
 
@@ -41,6 +38,7 @@ public class UpdateMappingRulesService {
     private void updateMappingRules() {
         JsonNode mappingRules = srmClient.retrieveMappingRules(MARC_BIB);
         mappingRulesUtil.relatorTermUpdate(mappingRules);
+        mappingRulesUtil.authorityControlUpdate(mappingRules);
         srmClient.updateMappingRules(mappingRules, MARC_BIB);
     }
 }

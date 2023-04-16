@@ -1,0 +1,8 @@
+{
+  "target": "contributors.authorityId",
+  "description": "Authority ID that controlling the contributor",
+  "applyRulesOnConcatenatedData": true,
+  "subfield": [
+    "9"
+  ]
+}
