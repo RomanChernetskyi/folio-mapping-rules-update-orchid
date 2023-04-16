@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.StringUtils;
 
@@ -24,6 +23,8 @@ public class MappingRulesUtil {
     public static final String TARGET = "target";
     public static final String SERIES = "series";
     public static final String SUBJECTS = "subjects";
+    public static final String CONTRIBUTORS = "contributors";
+    public static final String ALTERNATIVE_TITLES = "alternative titles";
     public static final String DOT = ".";
     public static final String VALUE = "value";
     public static final String CONTRIBUTOR_TYPE_ID = "contributors.contributorTypeId";
@@ -34,6 +35,8 @@ public class MappingRulesUtil {
     public static final String ALTERNATIVE_TITLE_TARGET = "authorityControl/alternativeTitlesTarget.json";
     public static final String CONTRIBUTORS_TARGET = "authorityControl/contributorsTarget.json";
     public static final String SERIES_TARGET = "authorityControl/seriesTarget.json";
+    public static final String CANNOT_UPDATE_AUTHORITY_CONTROL_LOG = "Cannot update %s mapping rules, field: %s";
+    public static final String UPDATING_AUTHORITY_CONTROL_LOG = "Updating %s mapping rules for fields: %s";
     public static final String SUBJECTS_TARGET = "authorityControl/subjectsTarget.json";
 
     public void relatorTermUpdate(JsonNode mappingRules) {
@@ -63,30 +66,49 @@ public class MappingRulesUtil {
     }
 
     public void authorityControlUpdate(JsonNode mappingRules) {
-        log.info(format("Updating alternative titles mapping rules for fields: %s", StringUtils.collectionToCommaDelimitedString(alternativeTitlesFields)));
-        alternativeTitlesFields.forEach(field -> addTarget(mappingRules.get(field), UPDATED_MAPPING_RULES_PATH + ALTERNATIVE_TITLE_TARGET));
-
-        log.info(format("Updating contributors mapping rules for fields: %s", StringUtils.collectionToCommaDelimitedString(contributorsFields)));
-        contributorsFields.forEach(field -> addTarget(mappingRules.get(field), UPDATED_MAPPING_RULES_PATH + CONTRIBUTORS_TARGET));
-
-        log.info(format("Updating series mapping rules for fields: %s", StringUtils.collectionToCommaDelimitedString(seriesFields)));
-        seriesFields.forEach(field -> {
-            JsonNode fieldRules = mappingRules.get(field);
-            surroundEntityRulesWithEntity(fieldRules);
-            addValueToTarget(fieldRules, SERIES);
-            addTarget(fieldRules, UPDATED_MAPPING_RULES_PATH + SERIES_TARGET);
+        log.info(format(UPDATING_AUTHORITY_CONTROL_LOG, ALTERNATIVE_TITLES, StringUtils.collectionToCommaDelimitedString(alternativeTitlesFields)));
+        alternativeTitlesFields.forEach(field -> {
+            try {
+                addTarget(mappingRules.get(field), UPDATED_MAPPING_RULES_PATH + ALTERNATIVE_TITLE_TARGET);
+            } catch (Exception e) {
+                log.warn(format(CANNOT_UPDATE_AUTHORITY_CONTROL_LOG, ALTERNATIVE_TITLES, field), e);
+            }
         });
 
-        log.info(format("Updating subjects mapping rules for fields: %s", StringUtils.collectionToCommaDelimitedString(subjectsFields)));
+        log.info(format(UPDATING_AUTHORITY_CONTROL_LOG, CONTRIBUTORS, StringUtils.collectionToCommaDelimitedString(contributorsFields)));
+        contributorsFields.forEach(field -> {
+            try {
+                addTarget(mappingRules.get(field), UPDATED_MAPPING_RULES_PATH + CONTRIBUTORS_TARGET);
+            } catch (Exception e) {
+                log.warn(format(CANNOT_UPDATE_AUTHORITY_CONTROL_LOG, CONTRIBUTORS, field), e);
+            }
+        });
+
+        log.info(format(UPDATING_AUTHORITY_CONTROL_LOG, SERIES, StringUtils.collectionToCommaDelimitedString(seriesFields)));
+        seriesFields.forEach(field -> {
+            try {
+                JsonNode fieldRules = mappingRules.get(field);
+                surroundRulesWithEntity(fieldRules);
+                addValueToTarget(fieldRules, SERIES);
+                addTarget(fieldRules, UPDATED_MAPPING_RULES_PATH + SERIES_TARGET);
+            } catch (Exception e) {
+                log.warn(format(CANNOT_UPDATE_AUTHORITY_CONTROL_LOG, SERIES, field), e);
+            }
+        });
+
+        log.info(format(UPDATING_AUTHORITY_CONTROL_LOG, SUBJECTS, StringUtils.collectionToCommaDelimitedString(subjectsFields)));
         subjectsFields.forEach(field -> {
-            JsonNode fieldRules = mappingRules.get(field);
-            surroundEntityRulesWithEntity(fieldRules);
-            addValueToTarget(fieldRules, SUBJECTS);
-            addTarget(fieldRules, UPDATED_MAPPING_RULES_PATH + SUBJECTS_TARGET);
+            try {
+                JsonNode fieldRules = mappingRules.get(field);
+                surroundRulesWithEntity(fieldRules);
+                addValueToTarget(fieldRules, SUBJECTS);
+                addTarget(fieldRules, UPDATED_MAPPING_RULES_PATH + SUBJECTS_TARGET);
+            } catch (Exception e) {
+                log.warn(format(CANNOT_UPDATE_AUTHORITY_CONTROL_LOG, SUBJECTS, field), e);
+            }
         });
     }
 
-    @SneakyThrows
     private void removeTarget(JsonNode fieldRules, String targetName) {
         for (JsonNode entityRule : fieldRules) {
             ArrayNode rules = (ArrayNode) entityRule.get(ENTITY);
@@ -100,7 +122,6 @@ public class MappingRulesUtil {
         }
     }
 
-    @SneakyThrows
     private void addTarget(JsonNode fieldRules, String targetPath) {
         for (JsonNode entityRule : fieldRules) {
             ArrayNode rules = (ArrayNode) entityRule.get(ENTITY);
@@ -108,18 +129,20 @@ public class MappingRulesUtil {
         }
     }
 
-    public void surroundEntityRulesWithEntity(JsonNode fieldRules) {
+    private void surroundRulesWithEntity(JsonNode fieldRules) {
         if (fieldRules.findValue(ENTITY) == null) {
             ArrayNode arrayNode = new ArrayNode(JsonNodeFactory.instance);
             for (JsonNode fieldRule : fieldRules) {
                 arrayNode.add(fieldRule);
             }
             ((ArrayNode) fieldRules).removeAll();
-            ((ArrayNode) fieldRules).add(new ObjectNode(JsonNodeFactory.instance).putIfAbsent(ENTITY, arrayNode));
+            ObjectNode ruleSurroundedWithEntity = new ObjectNode(JsonNodeFactory.instance);
+            ruleSurroundedWithEntity.putIfAbsent(ENTITY, arrayNode);
+            ((ArrayNode) fieldRules).add(ruleSurroundedWithEntity);
         }
     }
 
-    public void addValueToTarget(JsonNode fieldRules, String targetName) {
+    private void addValueToTarget(JsonNode fieldRules, String targetName) {
         for (JsonNode fieldRule : fieldRules) {
             for (JsonNode rule : fieldRule.get(ENTITY)) {
                 if (rule.get(TARGET).asText().equals(targetName)) {

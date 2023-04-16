@@ -12,7 +12,6 @@ public class ResponseMapper {
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
-
     @SneakyThrows
     public static JsonNode mapResponseToJson(HttpResponse<String> response) {
         return OBJECT_MAPPER.readTree(response.body());
