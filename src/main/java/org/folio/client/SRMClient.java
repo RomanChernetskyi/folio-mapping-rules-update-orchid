@@ -17,6 +17,7 @@ public class SRMClient {
     }
 
     public JsonNode retrieveMappingRules(String recordType) {
+        log.info("Retrieving mapping rules...");
 
         var request = httpWorker.constructGETRequest(format(MAPPING_RULES, recordType));
         var response = httpWorker.sendRequest(request);

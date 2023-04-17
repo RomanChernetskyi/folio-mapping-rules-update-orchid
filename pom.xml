@@ -47,6 +47,7 @@
     </dependencies>
 
     <build>
+        <finalName>folio-mapping-rules-update-orchid</finalName>
         <plugins>
             <plugin>
                 <groupId>org.springframework.boot</groupId>

@@ -87,8 +87,14 @@ public class MappingRulesUtilTest {
     }
 
     @Test(expected = Exception.class)
-    public void shouldThrowErrorsForIncorrectIncomingMappingRule() {
+    public void shouldThrowErrorsForIncorrectIncomingMappingRuleOnRelatorTermUpdate() {
         JsonNode incorrectRules = FileWorker.getJsonObject(INCORRECT_RULES);
         mappingRulesUtil.relatorTermUpdate(incorrectRules);
+    }
+
+    @Test(expected = Exception.class)
+    public void shouldThrowErrorsForIncorrectIncomingMappingRuleOnAuthorityControl() {
+        JsonNode incorrectRules = FileWorker.getJsonObject(INCORRECT_RULES);
+        mappingRulesUtil.authorityControlUpdate(incorrectRules);
     }
 }

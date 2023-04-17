@@ -69,7 +69,9 @@ public class HttpWorker {
 
     @SneakyThrows
     public HttpResponse<String> sendRequest(HttpRequest request) {
-        return HttpClient.newHttpClient()
+        return HttpClient.newBuilder()
+                .version(HttpClient.Version.HTTP_1_1)
+                .build()
                 .send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
     }
 

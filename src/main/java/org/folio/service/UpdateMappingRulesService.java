@@ -39,6 +39,6 @@ public class UpdateMappingRulesService {
         JsonNode mappingRules = srmClient.retrieveMappingRules(MARC_BIB);
         mappingRulesUtil.relatorTermUpdate(mappingRules);
         mappingRulesUtil.authorityControlUpdate(mappingRules);
-//        srmClient.updateMappingRules(mappingRules, MARC_BIB);
+        srmClient.updateMappingRules(mappingRules, MARC_BIB);
     }
 }
