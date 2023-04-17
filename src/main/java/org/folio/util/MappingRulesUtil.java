@@ -123,9 +123,12 @@ public class MappingRulesUtil {
     }
 
     private void addTarget(JsonNode fieldRules, String targetPath) {
+        JsonNode newTarget = FileWorker.getJsonObject(targetPath);
         for (JsonNode entityRule : fieldRules) {
             ArrayNode rules = (ArrayNode) entityRule.get(ENTITY);
-            rules.add(FileWorker.getJsonObject(targetPath));
+            if (!isContainsTarget(rules, newTarget.get(TARGET).asText())) {
+                rules.add(newTarget);
+            }
         }
     }
 
@@ -150,5 +153,14 @@ public class MappingRulesUtil {
                 }
             }
         }
+    }
+
+    private boolean isContainsTarget(ArrayNode rules, String targetName) {
+        for (JsonNode rule: rules) {
+            if (rule.get(TARGET).asText().equals(targetName)) {
+                return true;
+            }
+        }
+        return false;
     }
 }

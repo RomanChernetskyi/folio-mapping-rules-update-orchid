@@ -11,23 +11,25 @@ public class MappingRulesUtilTest {
     private final String MAPPING_RULES_PATH = "mappingRules.json";
     private final String RELATOR_TERM_MAPPING_RULES_RESULT_PATH = "relatorTermRules.json";
     private final String AUTHORITY_CONTROL_MAPPING_RULES_RESULT_PATH = "authorityControlRules.json";
+    private final String COMPLETE_MAPPING_RULES_RESULT_PATH = "completeMappingRules.json";
+    private final String OVERLAP_RULES = "overlapRulesTest.json";
     private ObjectNode mappingRules;
     private ObjectNode relatorTermMappingRulesResult;
     private ObjectNode authorityControlMappingRulesResult;
+    private ObjectNode completeMappingRulesResult;
 
     @Before
     public void setup() {
         mappingRules = FileWorker.getJsonObject(MAPPING_RULES_PATH);
         relatorTermMappingRulesResult = FileWorker.getJsonObject(RELATOR_TERM_MAPPING_RULES_RESULT_PATH);
         authorityControlMappingRulesResult = FileWorker.getJsonObject(AUTHORITY_CONTROL_MAPPING_RULES_RESULT_PATH);
+        completeMappingRulesResult = FileWorker.getJsonObject(COMPLETE_MAPPING_RULES_RESULT_PATH);
     }
 
     @Test
     public void shouldUpdateRelatorTerm() {
         mappingRulesUtil.relatorTermUpdate(mappingRules);
-
-        JsonNode mappingRulesResult = FileWorker.getJsonObject(RELATOR_TERM_MAPPING_RULES_RESULT_PATH);
-        Assert.assertEquals(mappingRulesResult, mappingRules);
+        Assert.assertEquals(relatorTermMappingRulesResult, mappingRules);
     }
 
     @Test
@@ -63,4 +65,24 @@ public class MappingRulesUtilTest {
         authorityControlMappingRulesResult.remove("600");
         Assert.assertEquals(authorityControlMappingRulesResult, mappingRules);
     }
+
+    @Test
+    public void shouldUpdateAuthorityControlAndRelatorTermMappingRules() {
+        mappingRulesUtil.relatorTermUpdate(mappingRules);
+        mappingRulesUtil.authorityControlUpdate(mappingRules);
+
+        Assert.assertEquals(completeMappingRulesResult, mappingRules);
+    }
+
+    @Test
+    public void shouldNotOverlapMappingRulesOnUpdate() {
+        JsonNode overlapMappingRulesResult = FileWorker.getJsonObject(OVERLAP_RULES);
+        JsonNode mappingRules = overlapMappingRulesResult.deepCopy();
+
+        mappingRulesUtil.relatorTermUpdate(mappingRules);
+        mappingRulesUtil.authorityControlUpdate(mappingRules);
+
+        Assert.assertEquals(overlapMappingRulesResult, mappingRules);
+    }
+
 }

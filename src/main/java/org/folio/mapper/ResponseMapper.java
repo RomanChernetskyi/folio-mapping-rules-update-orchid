@@ -9,7 +9,6 @@ import java.net.http.HttpResponse;
 
 @Slf4j
 public class ResponseMapper {
-
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     @SneakyThrows

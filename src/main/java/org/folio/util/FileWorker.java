@@ -27,32 +27,6 @@ public class FileWorker {
         return getMappedFile(configurationFile, Configuration.class);
     }
 
-    public static void saveConfiguration(Configuration configuration) {
-        try (FileWriter fileWriter = new FileWriter(configurationFile)) {
-            var objectWriter = OBJECT_MAPPER.writer().withDefaultPrettyPrinter();
-            fileWriter.write(objectWriter.writeValueAsString(configuration));
-        } catch (IOException e) {
-            exitWithError("Failed to update configuration file");
-        }
-    }
-
-    public static Path writeFile(String name, List<String> strings) {
-        File file = new File(name);
-        try (FileWriter fw = new FileWriter(file, StandardCharsets.UTF_8);
-             BufferedWriter writer = new BufferedWriter(fw)) {
-            for (var str : strings) {
-                writer.append(str);
-            }
-        } catch (IOException e) {
-            exitWithError("Failed to write file: " + name);
-        }
-        return file.toPath();
-    }
-
-    public static boolean deleteFile(Path path) {
-        return path.toFile().delete();
-    }
-
     public static InputStream getResourceFile(String name) {
         try {
             return ResourceUtils.getURL("classpath:" + name).openStream();
