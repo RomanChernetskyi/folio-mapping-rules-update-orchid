@@ -13,6 +13,7 @@ public class MappingRulesUtilTest {
     private final String AUTHORITY_CONTROL_MAPPING_RULES_RESULT_PATH = "authorityControlRules.json";
     private final String COMPLETE_MAPPING_RULES_RESULT_PATH = "completeMappingRules.json";
     private final String OVERLAP_RULES = "overlapRulesTest.json";
+    private final String INCORRECT_RULES = "incorrectRules.json";
     private ObjectNode mappingRules;
     private ObjectNode relatorTermMappingRulesResult;
     private ObjectNode authorityControlMappingRulesResult;
@@ -85,4 +86,9 @@ public class MappingRulesUtilTest {
         Assert.assertEquals(overlapMappingRulesResult, mappingRules);
     }
 
+    @Test(expected = Exception.class)
+    public void shouldThrowErrorsForIncorrectIncomingMappingRule() {
+        JsonNode incorrectRules = FileWorker.getJsonObject(INCORRECT_RULES);
+        mappingRulesUtil.relatorTermUpdate(incorrectRules);
+    }
 }

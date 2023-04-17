@@ -42,25 +42,31 @@ public class MappingRulesUtil {
     public void relatorTermUpdate(JsonNode mappingRules) {
         log.info(format("Updating relator term mapping rules, subfield \"e\" for fields: %s", StringUtils.collectionToCommaDelimitedString(contributorsFieldsWithSubfieldEtoUpdate)));
         contributorsFieldsWithSubfieldEtoUpdate.forEach(field -> {
-            try {
-                JsonNode fieldRule = mappingRules.get(field);
-                removeTarget(fieldRule, CONTRIBUTOR_TYPE_ID);
-                removeTarget(fieldRule, CONTRIBUTOR_TYPE_TEXT);
-                addTarget(fieldRule, UPDATED_MAPPING_RULES_PATH + RELATOR_TERM_E_SUBFIELD_TARGET);
-            } catch (Exception e) {
-                log.warn(format("Cannot update relator term mapping rules, subfield \"e\", field: %s", field), e);
+            JsonNode fieldRule = mappingRules.get(field);
+            if (fieldRule != null) {
+                try {
+                    removeTarget(fieldRule, CONTRIBUTOR_TYPE_ID);
+                    removeTarget(fieldRule, CONTRIBUTOR_TYPE_TEXT);
+                    addTarget(fieldRule, UPDATED_MAPPING_RULES_PATH + RELATOR_TERM_E_SUBFIELD_TARGET);
+                } catch (Exception e) {
+                    log.warn(format("Cannot update relator term mapping rules, subfield \"e\", field: %s", field), e);
+                    throw e;
+                }
             }
         });
 
         log.info(format("Updating relator term mapping rules, subfield \"j\" for fields: %s", StringUtils.collectionToCommaDelimitedString(contributorsFieldsWithSubfieldJtoUpdate)));
         contributorsFieldsWithSubfieldJtoUpdate.forEach(field -> {
-            try {
-                JsonNode fieldRule = mappingRules.get(field);
-                removeTarget(fieldRule, CONTRIBUTOR_TYPE_ID);
-                removeTarget(fieldRule, CONTRIBUTOR_TYPE_TEXT);
-                addTarget(fieldRule, UPDATED_MAPPING_RULES_PATH + RELATOR_TERM_J_SUBFIELD_TARGET);
-            } catch (Exception e) {
-                log.warn(format("Cannot update relator term mapping rules, subfield \"j\", field: %s", field), e);
+            JsonNode fieldRule = mappingRules.get(field);
+            if (fieldRule != null) {
+                try {
+                    removeTarget(fieldRule, CONTRIBUTOR_TYPE_ID);
+                    removeTarget(fieldRule, CONTRIBUTOR_TYPE_TEXT);
+                    addTarget(fieldRule, UPDATED_MAPPING_RULES_PATH + RELATOR_TERM_J_SUBFIELD_TARGET);
+                } catch (Exception e) {
+                    log.warn(format("Cannot update relator term mapping rules, subfield \"j\", field: %s", field), e);
+                    throw e;
+                }
             }
         });
     }
@@ -68,43 +74,59 @@ public class MappingRulesUtil {
     public void authorityControlUpdate(JsonNode mappingRules) {
         log.info(format(UPDATING_AUTHORITY_CONTROL_LOG, ALTERNATIVE_TITLES, StringUtils.collectionToCommaDelimitedString(alternativeTitlesFields)));
         alternativeTitlesFields.forEach(field -> {
-            try {
-                addTarget(mappingRules.get(field), UPDATED_MAPPING_RULES_PATH + ALTERNATIVE_TITLE_TARGET);
-            } catch (Exception e) {
-                log.warn(format(CANNOT_UPDATE_AUTHORITY_CONTROL_LOG, ALTERNATIVE_TITLES, field), e);
+            JsonNode fieldRule = mappingRules.get(field);
+            if (fieldRule != null) {
+                try {
+                    addTarget(fieldRule, UPDATED_MAPPING_RULES_PATH + ALTERNATIVE_TITLE_TARGET);
+                } catch (Exception e) {
+                    log.warn(format(CANNOT_UPDATE_AUTHORITY_CONTROL_LOG, ALTERNATIVE_TITLES, field), e);
+                    throw e;
+                }
             }
         });
 
         log.info(format(UPDATING_AUTHORITY_CONTROL_LOG, CONTRIBUTORS, StringUtils.collectionToCommaDelimitedString(contributorsFields)));
         contributorsFields.forEach(field -> {
-            try {
-                addTarget(mappingRules.get(field), UPDATED_MAPPING_RULES_PATH + CONTRIBUTORS_TARGET);
-            } catch (Exception e) {
-                log.warn(format(CANNOT_UPDATE_AUTHORITY_CONTROL_LOG, CONTRIBUTORS, field), e);
+            JsonNode fieldRule = mappingRules.get(field);
+            if (fieldRule != null) {
+                try {
+                    addTarget(mappingRules.get(field), UPDATED_MAPPING_RULES_PATH + CONTRIBUTORS_TARGET);
+                } catch (Exception e) {
+                    log.warn(format(CANNOT_UPDATE_AUTHORITY_CONTROL_LOG, CONTRIBUTORS, field), e);
+                    throw e;
+                }
             }
         });
 
         log.info(format(UPDATING_AUTHORITY_CONTROL_LOG, SERIES, StringUtils.collectionToCommaDelimitedString(seriesFields)));
         seriesFields.forEach(field -> {
-            try {
-                JsonNode fieldRules = mappingRules.get(field);
-                surroundRulesWithEntity(fieldRules);
-                addValueToTarget(fieldRules, SERIES);
-                addTarget(fieldRules, UPDATED_MAPPING_RULES_PATH + SERIES_TARGET);
-            } catch (Exception e) {
-                log.warn(format(CANNOT_UPDATE_AUTHORITY_CONTROL_LOG, SERIES, field), e);
+            JsonNode fieldRule = mappingRules.get(field);
+            if (fieldRule != null) {
+                try {
+                    JsonNode fieldRules = mappingRules.get(field);
+                    surroundRulesWithEntity(fieldRules);
+                    addValueToTarget(fieldRules, SERIES);
+                    addTarget(fieldRules, UPDATED_MAPPING_RULES_PATH + SERIES_TARGET);
+                } catch (Exception e) {
+                    log.warn(format(CANNOT_UPDATE_AUTHORITY_CONTROL_LOG, SERIES, field), e);
+                    throw e;
+                }
             }
         });
 
         log.info(format(UPDATING_AUTHORITY_CONTROL_LOG, SUBJECTS, StringUtils.collectionToCommaDelimitedString(subjectsFields)));
         subjectsFields.forEach(field -> {
-            try {
-                JsonNode fieldRules = mappingRules.get(field);
-                surroundRulesWithEntity(fieldRules);
-                addValueToTarget(fieldRules, SUBJECTS);
-                addTarget(fieldRules, UPDATED_MAPPING_RULES_PATH + SUBJECTS_TARGET);
-            } catch (Exception e) {
-                log.warn(format(CANNOT_UPDATE_AUTHORITY_CONTROL_LOG, SUBJECTS, field), e);
+            JsonNode fieldRule = mappingRules.get(field);
+            if (fieldRule != null) {
+                try {
+                    JsonNode fieldRules = mappingRules.get(field);
+                    surroundRulesWithEntity(fieldRules);
+                    addValueToTarget(fieldRules, SUBJECTS);
+                    addTarget(fieldRules, UPDATED_MAPPING_RULES_PATH + SUBJECTS_TARGET);
+                } catch (Exception e) {
+                    log.warn(format(CANNOT_UPDATE_AUTHORITY_CONTROL_LOG, SUBJECTS, field), e);
+                    throw e;
+                }
             }
         });
     }
@@ -156,7 +178,7 @@ public class MappingRulesUtil {
     }
 
     private boolean isContainsTarget(ArrayNode rules, String targetName) {
-        for (JsonNode rule: rules) {
+        for (JsonNode rule : rules) {
             if (rule.get(TARGET).asText().equals(targetName)) {
                 return true;
             }
