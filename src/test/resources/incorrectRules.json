@@ -1,3 +1,6 @@
 {
-  "100": ["incorrect"]
+  "100": [
+    {
+      "target": "contributors"
+    }]
 }

@@ -7,7 +7,10 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.StringUtils;
 
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import static java.lang.String.format;
 
@@ -15,16 +18,12 @@ import static java.lang.String.format;
 public class MappingRulesUtil {
     public static final List<String> contributorsFieldsWithSubfieldEtoUpdate = List.of("100", "110", "700", "710" );
     public static final List<String> contributorsFieldsWithSubfieldJtoUpdate = List.of("111", "711" );
-    public static final List<String> alternativeTitlesFields = List.of("130", "240" );
-    public static final List<String> contributorsFields = List.of("100", "110", "111", "700", "710", "711" );
-    public static final List<String> seriesFields = List.of("800", "810", "811", "830" );
-    public static final List<String> subjectsFields = List.of("600", "610", "611", "630", "650", "651", "655" );
     public static final String ENTITY = "entity";
     public static final String TARGET = "target";
     public static final String SERIES = "series";
     public static final String SUBJECTS = "subjects";
     public static final String CONTRIBUTORS = "contributors";
-    public static final String ALTERNATIVE_TITLES = "alternative titles";
+    public static final String ALTERNATIVE_TITLES = "alternativeTitles";
     public static final String DOT = ".";
     public static final String VALUE = "value";
     public static final String CONTRIBUTOR_TYPE_ID = "contributors.contributorTypeId";
@@ -72,6 +71,7 @@ public class MappingRulesUtil {
     }
 
     public void authorityControlUpdate(JsonNode mappingRules) {
+        List<String> alternativeTitlesFields = findFieldsContainsTarget(mappingRules, ALTERNATIVE_TITLES);
         log.info(format(UPDATING_AUTHORITY_CONTROL_LOG, ALTERNATIVE_TITLES, StringUtils.collectionToCommaDelimitedString(alternativeTitlesFields)));
         alternativeTitlesFields.forEach(field -> {
             JsonNode fieldRule = mappingRules.get(field);
@@ -85,6 +85,7 @@ public class MappingRulesUtil {
             }
         });
 
+        List<String> contributorsFields = findFieldsContainsTarget(mappingRules, CONTRIBUTORS);
         log.info(format(UPDATING_AUTHORITY_CONTROL_LOG, CONTRIBUTORS, StringUtils.collectionToCommaDelimitedString(contributorsFields)));
         contributorsFields.forEach(field -> {
             JsonNode fieldRule = mappingRules.get(field);
@@ -98,6 +99,7 @@ public class MappingRulesUtil {
             }
         });
 
+        List<String> seriesFields = findFieldsContainsTarget(mappingRules, SERIES);
         log.info(format(UPDATING_AUTHORITY_CONTROL_LOG, SERIES, StringUtils.collectionToCommaDelimitedString(seriesFields)));
         seriesFields.forEach(field -> {
             JsonNode fieldRule = mappingRules.get(field);
@@ -114,8 +116,9 @@ public class MappingRulesUtil {
             }
         });
 
-        log.info(format(UPDATING_AUTHORITY_CONTROL_LOG, SUBJECTS, StringUtils.collectionToCommaDelimitedString(subjectsFields)));
-        subjectsFields.forEach(field -> {
+        List<String> subjectFields = findFieldsContainsTarget(mappingRules, SUBJECTS);
+        log.info(format(UPDATING_AUTHORITY_CONTROL_LOG, SUBJECTS, StringUtils.collectionToCommaDelimitedString(subjectFields)));
+        subjectFields.forEach(field -> {
             JsonNode fieldRule = mappingRules.get(field);
             if (fieldRule != null) {
                 try {
@@ -129,6 +132,23 @@ public class MappingRulesUtil {
                 }
             }
         });
+    }
+
+    private List<String> findFieldsContainsTarget(JsonNode mappingRules, String targetName) {
+        List<String> fields = new LinkedList<>();
+        Iterator<Map.Entry<String, JsonNode>> fieldsIterator = mappingRules.fields();
+        while (fieldsIterator.hasNext()) {
+            Map.Entry<String, JsonNode> field = fieldsIterator.next();
+            String fieldName = field.getKey();
+            JsonNode fieldValue = field.getValue();
+            if (fieldContainsTarget(fieldValue, targetName)) fields.add(fieldName);
+        }
+        return fields;
+    }
+
+    private boolean fieldContainsTarget(JsonNode fieldValue, String targetName) {
+        List<String> targetValue = fieldValue.findValuesAsText(TARGET);
+        return targetValue.stream().anyMatch(target -> target.equals(targetName) || target.contains(targetName + DOT));
     }
 
     private void removeTarget(JsonNode fieldRules, String targetName) {
