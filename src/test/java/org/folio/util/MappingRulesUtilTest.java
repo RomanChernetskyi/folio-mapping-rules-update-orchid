@@ -14,10 +14,14 @@ public class MappingRulesUtilTest {
     private final String COMPLETE_MAPPING_RULES_RESULT_PATH = "completeMappingRules.json";
     private final String OVERLAP_RULES = "overlapRulesTest.json";
     private final String INCORRECT_RULES = "incorrectRules.json";
+    private final String CONTRIBUTOR_NAME_RULES = "contributorNameRules.json";
+    private final String EXPECTED_CONTRIBUTOR_NAME_RULES = "expectedContributorNameRules.json";
     private ObjectNode mappingRules;
     private ObjectNode relatorTermMappingRulesResult;
     private ObjectNode authorityControlMappingRulesResult;
     private ObjectNode completeMappingRulesResult;
+    private ObjectNode contributorNameRules;
+    private ObjectNode expectedContributorNameRules;
 
     @Before
     public void setup() {
@@ -25,6 +29,8 @@ public class MappingRulesUtilTest {
         relatorTermMappingRulesResult = FileWorker.getJsonObject(RELATOR_TERM_MAPPING_RULES_RESULT_PATH);
         authorityControlMappingRulesResult = FileWorker.getJsonObject(AUTHORITY_CONTROL_MAPPING_RULES_RESULT_PATH);
         completeMappingRulesResult = FileWorker.getJsonObject(COMPLETE_MAPPING_RULES_RESULT_PATH);
+        expectedContributorNameRules = FileWorker.getJsonObject(EXPECTED_CONTRIBUTOR_NAME_RULES);
+        contributorNameRules = FileWorker.getJsonObject(CONTRIBUTOR_NAME_RULES);
     }
 
     @Test
@@ -96,5 +102,11 @@ public class MappingRulesUtilTest {
     public void shouldThrowErrorsForIncorrectIncomingMappingRuleOnAuthorityControl() {
         JsonNode incorrectRules = FileWorker.getJsonObject(INCORRECT_RULES);
         mappingRulesUtil.authorityControlUpdate(incorrectRules);
+    }
+
+    @Test
+    public void shouldUpdateContributorNameRules() {
+        mappingRulesUtil.updateOldContributorNameRules(contributorNameRules);
+        Assert.assertEquals(expectedContributorNameRules, contributorNameRules);
     }
 }

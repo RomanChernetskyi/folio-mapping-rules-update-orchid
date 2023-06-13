@@ -23,6 +23,10 @@ public class MappingRulesUtil {
     public static final String SERIES = "series";
     public static final String SUBJECTS = "subjects";
     public static final String CONTRIBUTORS = "contributors";
+    public static final String CONTRIBUTORS_NAME = "contributors.name";
+    public static final String RULES = "rules";
+    public static final String TYPE = "type";
+    public static final String CONDITIONS = "conditions";
     public static final String ALTERNATIVE_TITLES = "alternativeTitles";
     public static final String DOT = ".";
     public static final String VALUE = "value";
@@ -84,54 +88,32 @@ public class MappingRulesUtil {
                 }
             }
         });
+    }
+    public void updateOldContributorNameRules(JsonNode mappingRules) {
+        log.info("Updating contributors.name rule for fields 100-199 and 700-799");
+        var rules = mappingRules.fields();
+        while (rules.hasNext()) {
+            var rule = rules.next();
+            var field = Integer.parseInt(rule.getKey());
+            replaceOldContributorNameRulesInField(field, rule.getValue());
+        }
+    }
 
-        List<String> contributorsFields = findFieldsContainsTarget(mappingRules, CONTRIBUTORS);
-        log.info(format(UPDATING_AUTHORITY_CONTROL_LOG, CONTRIBUTORS, StringUtils.collectionToCommaDelimitedString(contributorsFields)));
-        contributorsFields.forEach(field -> {
-            JsonNode fieldRule = mappingRules.get(field);
-            if (fieldRule != null) {
-                try {
-                    addTarget(mappingRules.get(field), UPDATED_MAPPING_RULES_PATH + CONTRIBUTORS_TARGET);
-                } catch (Exception e) {
-                    log.warn(format(CANNOT_UPDATE_AUTHORITY_CONTROL_LOG, CONTRIBUTORS, field), e);
-                    throw e;
+    private void replaceOldContributorNameRulesInField(Integer field, JsonNode body) {
+        if ((field >= 100 && field < 200) || (field >= 700 && field < 800)) {
+            for (JsonNode jsonNode : body) {
+                ArrayNode entities = (ArrayNode) jsonNode.get(ENTITY);
+                for (JsonNode entity : entities) {
+                    if (entity.get(TARGET).asText().equals(CONTRIBUTORS_NAME)) {
+                        for (JsonNode node : entity.get(RULES)) {
+                            for (JsonNode conditions : node.get(CONDITIONS)) {
+                                ((ObjectNode) conditions).put(TYPE, replaceContributorNameRule(conditions.get(TYPE).asText()));
+                            }
+                        }
+                    }
                 }
             }
-        });
-
-        List<String> seriesFields = findFieldsContainsTarget(mappingRules, SERIES);
-        log.info(format(UPDATING_AUTHORITY_CONTROL_LOG, SERIES, StringUtils.collectionToCommaDelimitedString(seriesFields)));
-        seriesFields.forEach(field -> {
-            JsonNode fieldRule = mappingRules.get(field);
-            if (fieldRule != null) {
-                try {
-                    JsonNode fieldRules = mappingRules.get(field);
-                    surroundRulesWithEntity(fieldRules);
-                    addValueToTarget(fieldRules, SERIES);
-                    addTarget(fieldRules, UPDATED_MAPPING_RULES_PATH + SERIES_TARGET);
-                } catch (Exception e) {
-                    log.warn(format(CANNOT_UPDATE_AUTHORITY_CONTROL_LOG, SERIES, field), e);
-                    throw e;
-                }
-            }
-        });
-
-        List<String> subjectFields = findFieldsContainsTarget(mappingRules, SUBJECTS);
-        log.info(format(UPDATING_AUTHORITY_CONTROL_LOG, SUBJECTS, StringUtils.collectionToCommaDelimitedString(subjectFields)));
-        subjectFields.forEach(field -> {
-            JsonNode fieldRule = mappingRules.get(field);
-            if (fieldRule != null) {
-                try {
-                    JsonNode fieldRules = mappingRules.get(field);
-                    surroundRulesWithEntity(fieldRules);
-                    addValueToTarget(fieldRules, SUBJECTS);
-                    addTarget(fieldRules, UPDATED_MAPPING_RULES_PATH + SUBJECTS_TARGET);
-                } catch (Exception e) {
-                    log.warn(format(CANNOT_UPDATE_AUTHORITY_CONTROL_LOG, SUBJECTS, field), e);
-                    throw e;
-                }
-            }
-        });
+        }
     }
 
     private List<String> findFieldsContainsTarget(JsonNode mappingRules, String targetName) {
@@ -204,5 +186,9 @@ public class MappingRulesUtil {
             }
         }
         return false;
+    }
+
+    private String replaceContributorNameRule(String type) {
+        return type.replace("trim_period, trim","trim_punctuation");
     }
 }
